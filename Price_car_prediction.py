@@ -1,5 +1,5 @@
 import os
-os.chdir('C:\\Users\\DELL\\Desktop\\nptl online course\\python for data science\\week 4')
+
 #Predicting price of pre-owned cars
 import pandas as pd
 import numpy as np
