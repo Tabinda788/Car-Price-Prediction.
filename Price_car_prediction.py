@@ -196,6 +196,212 @@ correlation=cars_select1.corr()
 round(correlation,3)
 cars_select1.corr().loc[:,'price'].abs().sort_values(ascending=False)[1:]
 
+"""
+We are going to build a linear regresssion and random forest model
+on 2 sets of data
+1. Data obtained by ommiting rows with missing values
+2. Data obtained by imputing missing values
+"""
+
+cars_omit=cars.dropna(axis=0)
+
+#Converting catagorical variables into dummy variables
+cars_omit=pd.get_dummies(cars_omit,drop_first=True)
+
+#Importing neessary libraries
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error
+
+#Building model with omitted data
+#Separating input and output features
+
+x1 = cars_omit.drop(['price'],axis='columns',inplace=False)
+y1 = cars_omit['price']
+
+#plotting the variable price
+prices = pd.DataFrame({"1. Before":y1, "2. After":np.log(y1)})
+prices.hist()
+
+#Transforming price as logrithmic value
+y1=np.log(y1)
+
+#splitting data into test and train
+X_train,X_test,y_train,y_test=train_test_split(x1,y1,test_size=0.3,random_state=3)
+print(X_train.shape,X_test.shape,y_train.shape,y_test.shape)
+
+#Baseline model for ommited data
+
+"""
+We are making a baseline model by using test data mean value
+This is to set a bench mark and to compare with our regression model
+"""
+
+#Fitting the mean for test data value
+base_pred=np.mean(y_test)
+print(base_pred)
+
+#Repeating same value till length of test data
+base_pred=np.repeat(base_pred,len(y_test))
+
+#Finding the root mean square error
+base_root_mean_square_error=np.sqrt(mean_squared_error(y_test,base_pred))
+print(base_root_mean_square_error)
+
+#Linear Regression with ommited data
+#Setting intercept as true
+lgr=LinearRegression(fit_intercept=True)
+
+#Model
+Model_lin1=lgr.fit(X_train,y_train)
+
+#Predicting model on test data
+cars_prediction_lin1=lgr.predict(X_test)
+
+#Computing MSE and RMSE
+lin_mse1=mean_squared_error(y_test,cars_prediction_lin1)
+lin_rmse1=np.sqrt(lin_mse1)
+print(lin_rmse1)
+
+#R-squared vale
+r2_lin_test1=Model_lin1.score(X_test,y_test)
+r2_lin_train1=Model_lin1.score(X_train,y_train)
+print(r2_lin_test1,r2_lin_train1)
+
+#Regression diagnosis-Residual plot analysis
+residuals1=y_test-cars_prediction_lin1
+sns.regplot(x=cars_prediction_lin1,y=residuals1,scatter=True,fit_reg=False)
+residuals1.describe()
+#Ramdom Forest with ommited data
+rf = RandomForestRegressor(n_estimators=100,max_features='auto',
+                          max_depth=100,min_samples_split=10, 
+                          min_samples_leaf=4,random_state=1)
+
+
+
+#Model
+model_rf1=rf.fit(X_train,y_train)
+#Predicting model on test set
+cars_prediction_rf1=rf.predict(X_test)
+
+#Computing MSE and RMSE
+rf_mse1=mean_squared_error(y_test,cars_prediction_rf1)
+lin_rmse1=np.sqrt(rf_mse1)
+print(lin_rmse1)
+
+#Rsquared value
+r2_rf_test1=model_rf1.score(X_test,y_test)
+r2_rf_train1=model_rf1.score(X_train,y_train)
+print(r2_rf_test1,r2_rf_train1)
+
+#Model building with imputed data
+cars_imputed=cars.apply(lambda x:x.fillna(x.median())\
+                        if x.dtype == 'float' else \
+                        x.fillna(x.value_counts().index[0]))
+cars_imputed.isnull().sum()
+cars_imputed=pd.get_dummies(cars_imputed,drop_first=True)
+
+#Model building with imputed data
+
+#Separating input and output features
+
+x2 = cars_imputed.drop(['price'],axis='columns',inplace=False)
+y2 = cars_imputed['price']
+
+#plotting the variable price
+prices = pd.DataFrame({"1. Before":y2, "2. After":np.log(y2)})
+prices.hist()
+
+#Transforming price as logrithmic value
+y2=np.log(y2)
+
+#splitting data into test and train
+X_train1,X_test1,y_train1,y_test1=train_test_split(x2,y2,test_size=0.3,random_state=3)
+print(X_train.shape,X_test.shape,y_train.shape,y_test.shape)
+
+#Baseline model for imputed data
+
+"""
+We are making a baseline model by using test data mean value
+This is to set a bench mark and to compare with our regression model
+"""
+
+#Fitting the mean for test data value
+base_pred=np.mean(y_test1)
+print(base_pred)
+
+#Repeating same value till length of test data
+base_pred=np.repeat(base_pred,len(y_test1))
+ 
+#Finding the root mean square error
+base_root_mean_square_error=np.sqrt(mean_squared_error(y_test1,base_pred))
+print(base_root_mean_square_error)
+
+#Linear Regression with imputed data
+#Setting intercept as true
+lgr2=LinearRegression(fit_intercept=True)
+
+#Model
+Model_lin2=lgr2.fit(X_train1,y_train1)
+
+#Predicting model on test data
+cars_prediction_lin2=lgr2.predict(X_test1)
+
+#Computing MSE and RMSE
+lin_mse2=mean_squared_error(y_test1,cars_prediction_lin2)
+lin_rmse2=np.sqrt(lin_mse2)
+print(lin_rmse2)
+
+#R-squared vale
+r2_lin_test2=Model_lin2.score(X_test1,y_test1)
+r2_lin_train2=Model_lin2.score(X_train1,y_train1)
+print(r2_lin_test2,r2_lin_train2)
+
+#Ramdom Forest with ommited data
+rf2 = RandomForestRegressor(n_estimators=100,max_features='auto',
+                          max_depth=100,min_samples_split=10, 
+                          min_samples_leaf=4,random_state=1)
+
+
+
+#Model
+model_rf2=rf2.fit(X_train1,y_train1)
+#Predicting model on test set
+cars_prediction_rf2=rf2.predict(X_test1)
+
+#Computing MSE and RMSE
+rf_mse2=mean_squared_error(y_test1,cars_prediction_rf2)
+lin_rmse2=np.sqrt(rf_mse2)
+print(lin_rmse2)
+
+#Rsquared value
+r2_rf_test2=model_rf2.score(X_test1,y_test1)
+r2_rf_train2=model_rf2.score(X_train1,y_train1)
+print(r2_rf_test2,r2_rf_train2)
+
+
+#Final Output
+print("Metrics from models built on data where missing values are ommited")
+
+print("R square value for train for linear regression=%s"% r2_lin_train1)
+print("R square value for test for linear regression=%s"% r2_lin_test1)
+print("R square value for train for Random Forest=%s"% r2_rf_train1)
+print("R square value for test for Random Forest=%s"% r2_rf_test1)
+print("Base RMS built on data with missing values=%s"% base_root_mean_square_error)
+print("Rms value for test for linear regression=%s"% lin_rmse1)
+
+print("\n\n")
+
+print("Metrics from models built on data where imputed values are ommited")
+
+print("R square value for train for linear regression=%s"% r2_lin_train2)
+print("R square value for test for linear regression=%s"% r2_lin_test2)
+print("R square value for train for Random Forest=%s"% r2_rf_train2)
+print("R square value for test for Random Forest=%s"% r2_rf_test2)
+print("Base RMS built on data with imputed values=%s"% base_root_mean_square_error)
+print("Rms value for test for linear regression=%s"% lin_rmse2)
+
 
 
 
